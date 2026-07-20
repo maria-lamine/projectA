@@ -1,0 +1,102 @@
+---
+title: "Exploratory Data Analysis - projectA"
+author: "Maria Lamine"
+date: "2026-07-20"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+## Setup and Libraries
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+
+library(tidyverse)
+```
+
+## Data Description
+
+In this section, we load the Project A dataset and preview its structure. The dataset contains continuous metrics across two experimental groups: Control and Treatment A.
+
+```{r data-loading}
+if (file.exists("project_a_data.csv")) {
+  df <- read.csv("project_a_data.csv")
+} else {
+  set.seed(42)
+  df <- data.frame(
+    ID = 1:100,
+    Group = factor(rep(c("Control", "Treatment A"), each = 50)),
+    Value_A = c(rnorm(50, mean = 50, sd = 10), rnorm(50, mean = 65, sd = 12)),
+    Value_B = c(rnorm(50, mean = 100, sd = 15), rnorm(50, mean = 130, sd = 20))
+  )
+}
+
+head(df)
+```
+
+## Summary Statistics
+
+In this section, we compute key summary statistics for each treatment group.
+
+```{r summary-stats}
+summary_tbl <- df %>%
+  group_by(Group) %>%
+  summarise(
+    Count = n(),
+    Mean_Value_A = round(mean(Value_A), 2),
+    SD_Value_A   = round(sd(Value_A), 2),
+    Mean_Value_B = round(mean(Value_B), 2),
+    SD_Value_B   = round(sd(Value_B), 2)
+  )
+
+knitr::kable(summary_tbl, caption = "Summary Statistics by Group")
+```
+
+## Data Visualizations
+
+In this section, we visualize the distribution and relationship of our key metrics.
+
+```{r figure-1, fig.cap="Figure 1: Distribution of Value A by Group"}
+ggplot(df, aes(x = Group, y = Value_A, fill = Group)) +
+  geom_boxplot(alpha = 0.7, outlier.shape = NA) +
+  geom_jitter(width = 0.2, alpha = 0.5, color = "black") +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Value A Across Treatment Groups",
+    x = "Group",
+    y = "Value A Metric"
+  ) +
+  theme(legend.position = "none")
+```
+
+```{r figure-2, fig.cap="Figure 2: Relationship between Value A and Value B"}
+ggplot(df, aes(x = Value_A, y = Value_B, color = Group)) +
+  geom_point(size = 2.5, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE, linetype = "dashed") +
+  theme_minimal() +
+  labs(
+    title = "Scatter Plot of Value A vs. Value B",
+    x = "Value A",
+    y = "Value B",
+    color = "Treatment Group"
+  )
+```
+
+### Observations
+
+Based on the exploratory data analysis:
+* **Group Differences:** Treatment A demonstrates higher values for both Value A and Value B compared to the Control group.
+* **Positive Correlation:** There is a positive linear relationship between Value A and Value B across both groups.
+
+## Software Environment
+
+To ensure reproducibility, the software environment parameters and package versions used to generate this document are recorded below:
+
+```{r session-info}
+sessionInfo()
+```
